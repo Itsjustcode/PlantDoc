@@ -1,0 +1,43 @@
+# Node (React)
+client/node_modules/
+client/build/
+client/.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+env/
+venv/
+ENV/
+server/__pycache__/
+server/.env
+
+# MacOS & IDEs
+.DS_Store
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Python virtual environment
+venv/
+
+# Temporary files
+*.swp
+*.swo
+
+# Flask secret keys
+server/instance/
+
+# Coverage reports
+htmlcov/
+.tox/
+.coverage
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
