@@ -46,5 +46,5 @@ if __name__ == "__main__":
 
 #    """
 #    A test route
-#    must visit http://127.0.0.1:5000/hello in browser.
+#    must visit http://localhost:3000 in browser.
 #    """

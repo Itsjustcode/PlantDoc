@@ -1,4 +1,9 @@
 import React, { useState } from "react";
+import { Pie } from "react-chartjs-2";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+
+// Register Chart.js components
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 function App() {
   // Store selected file from file input
@@ -42,6 +47,20 @@ function App() {
     }
   };
 
+  // Prepare data for Pie chart if predictionResponse is available
+  const chartData = predictionResponse
+    ? {
+        labels: Object.keys(predictionResponse.confidence),
+        datasets: [
+          {
+            data: Object.values(predictionResponse.confidence),
+            backgroundColor: ["#4CAF50", "#FFC107", "#F44336"], // green, yellow, red
+            hoverOffset: 4,
+          },
+        ],
+      }
+    : null;
+
   return (
     <div style={{ padding: "2rem", fontFamily: "Arial, sans-serif" }}>
       <h1> Plant Doctor AI</h1>
@@ -59,7 +78,11 @@ function App() {
         <div style={{ marginTop: "2rem" }}>
           <h2>Prediction: {predictionResponse.label}</h2>
           <h3>Confidence Scores:</h3>
-          <pre>{JSON.stringify(predictionResponse.confidence, null, 2)}</pre>
+
+          {/* Pie Chart */}
+          <div style={{ maxWidth: "400px", margin: "0 auto" }}>
+            <Pie data={chartData} />
+          </div>
         </div>
       )}
     </div>
