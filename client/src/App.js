@@ -12,15 +12,22 @@ function App() {
   // Store response from backend
   const [predictionResponse, setPredictionResponse] = useState(null);
 
-  // When user selects an image file (via file input)
+  // Store error message from backend
+  const [errorMessage, setErrorMessage] = useState(null);
+
+  // When user selects an image file via file input
   const handleImageSelection = (event) => {
     setSelectedImageFile(event.target.files[0]);
+    setPredictionResponse(null);
+    setErrorMessage(null);
   };
 
   // When user drags & drops a file
   const handleDrop = (event) => {
     event.preventDefault();
     setSelectedImageFile(event.dataTransfer.files[0]);
+    setPredictionResponse(null);
+    setErrorMessage(null);
   };
 
   // Prevent default browser behavior for drag over
@@ -32,6 +39,7 @@ function App() {
   const handleCancel = () => {
     setSelectedImageFile(null);
     setPredictionResponse(null);
+    setErrorMessage(null);
   };
 
   // When user clicks the upload button
@@ -56,13 +64,26 @@ function App() {
       // Parse the JSON response
       const data = await response.json();
 
-      // Save response in state
-      setPredictionResponse(data);
-
+      if (response.ok) {
+        // Save response in state
+        setPredictionResponse(data);
+        setErrorMessage(null);
+      } else {
+        setPredictionResponse(null);
+        setErrorMessage(data.error || "Prediction failed.");
+      }
     } catch (error) {
       console.error("Error uploading image:", error);
-      alert("Failed to upload image.");
+      setErrorMessage("Failed to upload image.");
+      setPredictionResponse(null);
     }
+  };
+
+  // Category color mapping for Pie chart
+  const pieColors = {
+    Healthy: "#4CAF50",     // green
+    Diseased: "#F44336",    // red
+    Unknown: "#9E9E9E",     // gray
   };
 
   // Prepare data for Pie chart if predictionResponse is available
@@ -72,7 +93,9 @@ function App() {
         datasets: [
           {
             data: Object.values(predictionResponse.confidence),
-            backgroundColor: ["#4CAF50", "#FFC107", "#F44336"], // green, yellow, red
+            backgroundColor: Object.keys(predictionResponse.confidence).map(
+              (cat) => pieColors[cat] || "#90A4AE" // fallback color
+            ),
             hoverOffset: 4,
           },
         ],
@@ -127,10 +150,27 @@ function App() {
         <button onClick={handleCancel}>Cancel</button>
       </div>
 
+      {/* Display backend error if any */}
+      {errorMessage && (
+        <div style={{ marginTop: "2rem", color: "red", fontWeight: "bold" }}>
+          {errorMessage}
+        </div>
+      )}
+
       {/* Display prediction result */}
       {predictionResponse && (
         <div style={{ marginTop: "2rem" }}>
-          <h2>Prediction: {predictionResponse.label}</h2>
+          <h2>
+            Prediction:{" "}
+            <span
+              style={{
+                color:
+                  pieColors[predictionResponse.label] || "#333",
+              }}
+            >
+              {predictionResponse.label}
+            </span>
+          </h2>
           <h3>Confidence Scores:</h3>
 
           {/* Pie Chart */}

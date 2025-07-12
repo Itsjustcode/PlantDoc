@@ -10,6 +10,37 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import sys
 
+# List of all PlantVillage classes
+PLANTVILLAGE_CLASS_NAMES = [
+    "Peach_healthy", "Strawberry_leaf_scorch", "Grape_black_measles",
+    "Tomato_septoria_leaf_spot", "Grape_healthy", "Tomato_healthy",
+    "Peach_bacterial_spot", "Corn_gray_leaf_spot", "Soybean_healthy",
+    "Corn_common_rust", "Blueberry_healthy", "Corn_healthy",
+    "Apple_healthy", "Apple_cedar_apple_rust", "Background_without_leaves",
+    "Tomato_target_spot", "Pepper_healthy", "Grape_black_rot",
+    "Apple_scab", "Raspberry_healthy", "Tomato_early_blight",
+    "Tomato_yellow_leaf_curl_virus", "Corn_northern_leaf_blight",
+    "Potato_healthy", "Tomato_late_blight", "Cherry_powdery_mildew",
+    "Grape_leaf_blight", "Tomato_leaf_mold", "Pepper_bacterial_spot",
+    "Potato_late_blight", "Tomato_mosaic_virus", "Potato_early_blight",
+    "Tomato_bacterial_spot", "Strawberry_healthy", "Cherry_healthy",
+    "Squash_powdery_mildew", "Tomato_spider_mites_two-spotted_spider_mite",
+    "Orange_haunglongbing", "Apple_black_rot"
+]
+
+# function to map original PlantVillage class to 3-class labels
+def map_to_three_classes(label_index):
+    name = PLANTVILLAGE_CLASS_NAMES[label_index]
+    if "healthy" in name and name != "Background_without_leaves":
+        return 0  # Healthy
+    elif name == "Background_without_leaves":
+        return 2  # Unknown
+    else:
+        return 1  # Diseased
+
+three_class_names = ["Healthy", "Diseased", "Unknown"]
+num_classes = 3
+
 # Load dataset from Activeloop with augmentation
 print("Loading PlantVillage dataset (with augmentation) from Activeloop (read-only query)...")
 
@@ -35,20 +66,21 @@ labels = []
 print("\nProcessing samples...")
 for i, sample in enumerate(results):
     # Limit to 3000 samples for faster training
-    if i >= 3000:
+    if i >= 10000:
         break
     # get the image & label correctly
     image = sample["images"]                  # shape (256,256,3), dtype uint8
     label = sample["labels"][0]               # shape (1,), so take [0]
-
 
     # Check & reshape if necessary
     if image.shape != (256, 256, 3):
         print(f"Skipping sample {i}: unexpected image shape {image.shape}")
         continue
 
+    # Map PlantVillage class to 3-class label
+    label_3class = map_to_three_classes(label)
     images.append(image.astype(np.float32) / 255.0)  # normalize and cast
-    labels.append(label)
+    labels.append(label_3class)
 
 images = np.stack(images)  # now guaranteed to be rectangular
 labels = np.array(labels)
@@ -59,9 +91,6 @@ print(f"\nDataset loaded: {images.shape[0]} images, shape per image: {images.sha
 x_train, x_val, y_train, y_val = train_test_split(
     images, labels, test_size=0.2, random_state=42
 )
-
-# Get number of classes
-num_classes = len(np.unique(y_train))
 
 # Convert labels to one-hot encoded format
 y_train = tf.keras.utils.to_categorical(y_train, num_classes)
