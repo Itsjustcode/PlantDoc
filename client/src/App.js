@@ -6,22 +6,39 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 function App() {
-  // Store selected file from file input
+  // Store selected file from file input or drag & drop
   const [selectedImageFile, setSelectedImageFile] = useState(null);
 
   // Store response from backend
   const [predictionResponse, setPredictionResponse] = useState(null);
 
-  // When user selects an image file
+  // When user selects an image file (via file input)
   const handleImageSelection = (event) => {
     setSelectedImageFile(event.target.files[0]);
+  };
+
+  // When user drags & drops a file
+  const handleDrop = (event) => {
+    event.preventDefault();
+    setSelectedImageFile(event.dataTransfer.files[0]);
+  };
+
+  // Prevent default browser behavior for drag over
+  const handleDragOver = (event) => {
+    event.preventDefault();
+  };
+
+  // Reset the file selection and prediction response
+  const handleCancel = () => {
+    setSelectedImageFile(null);
+    setPredictionResponse(null);
   };
 
   // When user clicks the upload button
   const handleUploadAndPredict = async () => {
     // Make sure an image is selected
     if (!selectedImageFile) {
-      alert("Please select an image file first.");
+      alert("Please select or drop an image file first.");
       return;
     }
 
@@ -44,6 +61,7 @@ function App() {
 
     } catch (error) {
       console.error("Error uploading image:", error);
+      alert("Failed to upload image.");
     }
   };
 
@@ -65,13 +83,49 @@ function App() {
     <div style={{ padding: "2rem", fontFamily: "Arial, sans-serif" }}>
       <h1> Plant Doctor AI</h1>
 
+      {/* Drag & Drop Area */}
+      <div
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+        style={{
+          border: "2px dashed #ccc",
+          borderRadius: "8px",
+          padding: "2rem",
+          textAlign: "center",
+          marginBottom: "1rem",
+          cursor: "pointer",
+          backgroundColor: "#f9f9f9",
+        }}
+      >
+        {selectedImageFile ? (
+          <p>{selectedImageFile.name}</p>
+        ) : (
+          <p>Drag & Drop your image here, or use file input below</p>
+        )}
+      </div>
+
       {/* File input for selecting image */}
       <input type="file" accept="image/*" onChange={handleImageSelection} />
 
-      {/* Upload button */}
-      <button onClick={handleUploadAndPredict} style={{ marginLeft: "1rem" }}>
-        Upload & Diagnose
-      </button>
+      {/* Image preview */}
+      {selectedImageFile && (
+        <div style={{ marginTop: "1rem" }}>
+          <img
+            src={URL.createObjectURL(selectedImageFile)}
+            alt="Preview"
+            width="200"
+            style={{ borderRadius: "8px", marginTop: "1rem" }}
+          />
+        </div>
+      )}
+
+      {/* Buttons */}
+      <div style={{ marginTop: "1rem" }}>
+        <button onClick={handleUploadAndPredict} style={{ marginRight: "1rem" }}>
+          Upload & Diagnose
+        </button>
+        <button onClick={handleCancel}>Cancel</button>
+      </div>
 
       {/* Display prediction result */}
       {predictionResponse && (
