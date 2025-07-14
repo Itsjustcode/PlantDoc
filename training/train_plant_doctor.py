@@ -1,7 +1,7 @@
 import deeplake                                # to load PlantVillage dataset from Activeloop
 import tensorflow as tf
 from tensorflow.keras.applications import MobileNetV2
-from tensorflow.keras.layers import Dense, GlobalAveragePooling2D
+from tensorflow.keras.layers import Dense, Dropout, GlobalAveragePooling2D, BatchNormalization
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from sklearn.model_selection import train_test_split
@@ -66,7 +66,7 @@ labels = []
 print("\nProcessing samples...")
 for i, sample in enumerate(results):
     # Limit to 3000 samples for faster training
-    if i >= 10000:
+    if i >= 15000:
         break
     # get the image & label correctly
     image = sample["images"]                  # shape (256,256,3), dtype uint8
@@ -96,12 +96,35 @@ x_train, x_val, y_train, y_val = train_test_split(
 y_train = tf.keras.utils.to_categorical(y_train, num_classes)
 y_val = tf.keras.utils.to_categorical(y_val, num_classes)
 
-# Define experiment configurations
+# Define experiment configurations with more layers for fine-tuning
 experiment_configs = [
-    {"epochs": 5, "batch_size": 32, "learning_rate": 0.0001},
-    {"epochs": 10, "batch_size": 32, "learning_rate": 0.0001},
-    {"epochs": 5, "batch_size": 64, "learning_rate": 0.0001},
-    {"epochs": 5, "batch_size": 32, "learning_rate": 0.0005}
+    {
+        "epochs": 5, "batch_size": 16, "learning_rate": 0.0001,
+        "add_layers": [
+            BatchNormalization(),
+            Dropout(0.3),
+            Dense(128, activation='relu'),
+            Dropout(0.2)
+        ]
+    },
+    {
+        "epochs": 10, "batch_size": 32, "learning_rate": 0.0001,
+        "add_layers": [
+            Dense(256, activation='relu'),
+            Dropout(0.4)
+        ]
+    },
+    {
+        "epochs": 5, "batch_size": 64, "learning_rate": 0.0001,
+        "add_layers": [
+            Dense(64, activation='relu'),
+            Dropout(0.3)
+        ]
+    },
+    {
+        "epochs": 5, "batch_size": 32, "learning_rate": 0.0005,
+        "add_layers": []  # Only GAP + output
+    }
 ]
 
 results_log = []
@@ -112,17 +135,19 @@ best_config = None
 # Loop over configurations
 for idx, config in enumerate(experiment_configs):
     print(f"\nStarting experiment {idx+1} with config: {config}")
-    
+
     # Load base model
     base_model = MobileNetV2(
         weights='imagenet',
         include_top=False,
         input_shape=(256, 256, 3)
     )
-    
+
     # Add layers on top
     x = base_model.output
     x = GlobalAveragePooling2D()(x)
+    for layer in config.get("add_layers", []):
+        x = layer(x)
     predictions = Dense(num_classes, activation='softmax')(x)
 
     # Final model
