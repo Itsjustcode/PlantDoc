@@ -3,19 +3,20 @@ import { useLocation, useNavigate } from "react-router-dom";
 import PredictionResult from "../components/PredictionResult";
 
 function Results() {
-  // This would come from actual state in a real app; here we'll check location.state for demo
   const location = useLocation();
   const navigate = useNavigate();
-  // Use sample data if none is passed (for testing)
+
+  // Fallback demo data if not passed via navigation
   const prediction = location.state?.prediction || {
     label: "Diseased",
     confidence: {
-      Healthy: 15,
-      Deficient: 20,
-      Diseased: 65
+      Healthy: 0.15,
+      Diseased: 0.65,
+      Unknown: 0.20
     },
     filename: "leaf_example.png"
   };
+  const uploadedImage = location.state?.uploadedImage || null;
 
   return (
     <div style={{ fontFamily: "Arial, sans-serif", padding: "2rem 1rem", maxWidth: "900px", margin: "0 auto" }}>
@@ -37,24 +38,7 @@ function Results() {
         </button>
       </div>
 
-      <PredictionResult prediction={prediction} />
-
-      {/* Tips & Recommendations */}
-      <section style={{ marginTop: "2rem" }}>
-        <h2>Tips & Recommendations</h2>
-        <div style={{ display: "flex", gap: "1rem" }}>
-          <div style={{ flex: 1, background: "#f6f6f6", padding: "1rem", borderRadius: "8px" }}>
-            <strong>Actionable Advice</strong>
-            <div>
-              {prediction.label === "Diseased"
-                ? "Remove affected leaves and isolate plant to prevent spread."
-                : prediction.label === "Deficient"
-                ? "Check soil nutrients and adjust watering/fertilizer."
-                : "Keep up the good care!"}
-            </div>
-          </div>
-        </div>
-      </section>
+      <PredictionResult result={prediction} uploadedImage={uploadedImage} />
 
       {/* User Feedback */}
       <section style={{ marginTop: "2rem" }}>

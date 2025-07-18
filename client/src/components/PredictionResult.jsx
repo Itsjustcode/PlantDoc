@@ -8,19 +8,25 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 function PredictionResult({ result, uploadedImage }) {
   if (!result) return null; // Nothing to show if result doesn't exist
 
-  // Colors for each category
+  // Pie chart colors
   const pieColors = {
-    Healthy: "#4CAF50",      // green
-    Diseased: "#F44336",     // red
-    Unknown: "#9E9E9E"       // gray
+    Healthy: "#4CAF50",
+    Diseased: "#F44336",
+    Unknown: "#9E9E9E"
   };
 
   // Prepare chart data
+  const rawVals = Object.values(result.confidence);
+  // If values are already between 0-1, skip normalization
+  const sum = rawVals.reduce((a, b) => a + b, 0);
+  const isFractional = rawVals.every((v) => v <= 1);
   const chartData = {
     labels: Object.keys(result.confidence),
     datasets: [
       {
-        data: Object.values(result.confidence),
+        data: isFractional
+          ? rawVals.map((v) => Math.round(v * 100))
+          : rawVals,
         backgroundColor: Object.keys(result.confidence).map(
           (cat) => pieColors[cat] || "#90A4AE"
         ),
@@ -29,61 +35,37 @@ function PredictionResult({ result, uploadedImage }) {
     ],
   };
 
-  // Sample actionable tips (could be dynamic based on result.label)
-  const actionableAdvice = {
-    Healthy: "Your plant leaf looks healthy. Keep following good care practices!",
-    Diseased: "Remove affected leaves and isolate plant to prevent spread.",
-    Unknown: "Try uploading a clearer image, or consult a plant expert."
-  };
-
   return (
-    <div style={{ marginTop: "2rem" }}>
-      <h2>Diagnosis Results</h2>
-      <div style={{ margin: "2rem 0" }}>
-        <div style={{ maxWidth: "350px", margin: "0 auto" }}>
-          <Pie data={chartData} />
-        </div>
-      </div>
-      <h3>
+    <div>
+      <h2>
         Prediction:{" "}
         <span style={{ color: pieColors[result.label] || "#333" }}>
           {result.label}
         </span>
-      </h3>
-      <div style={{ margin: "1rem 0", fontSize: "1.1rem" }}>
+      </h2>
+      <div style={{ maxWidth: "350px", margin: "2rem auto" }}>
+        <Pie data={chartData} />
+      </div>
+      <div style={{ fontSize: "1.1rem", marginBottom: "1.5rem" }}>
         Confidence Levels:{" "}
         {Object.entries(result.confidence)
-          .map(([key, val]) => `${key}: ${(val * 100).toFixed(1)}%`)
+          .map(([key, val]) => {
+            const percent = isFractional ? (val * 100).toFixed(1) : val;
+            return `${key}: ${percent}%`;
+          })
           .join(", ")}
       </div>
-      <div style={{ display: "flex", gap: "2rem", flexWrap: "wrap" }}>
-        {/* Uploaded Image */}
-        {uploadedImage && (
-          <div>
-            <h4>Analyzed Image</h4>
-            <img
-              src={uploadedImage}
-              alt="Analyzed leaf"
-              width="160"
-              style={{ borderRadius: "8px", border: "1px solid #ddd" }}
-            />
-          </div>
-        )}
-
-        {/* Tips & Recommendations */}
+      {uploadedImage && (
         <div>
-          <h4>Tips & Recommendations</h4>
-          <div style={{
-            background: "#f7fff7",
-            border: "1px solid #e0ffe0",
-            padding: "1rem",
-            borderRadius: "8px",
-            maxWidth: "300px"
-          }}>
-            {actionableAdvice[result.label]}
-          </div>
+          <h4>Analyzed Image</h4>
+          <img
+            src={uploadedImage}
+            alt="Analyzed leaf"
+            width="160"
+            style={{ borderRadius: "8px", border: "1px solid #ddd", marginBottom: "1.5rem" }}
+          />
         </div>
-      </div>
+      )}
     </div>
   );
 }
