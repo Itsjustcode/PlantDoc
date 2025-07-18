@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 function Upload() {
   const [selectedImage, setSelectedImage] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
+  const [loading, setLoading] = useState(false); // NEW loading state
   const navigate = useNavigate();
 
   // Handle file input change
@@ -34,6 +35,8 @@ function Upload() {
       setErrorMessage("Please select or drop an image first.");
       return;
     }
+    setLoading(true);
+    setErrorMessage("");
     const formData = new FormData();
     formData.append("image", selectedImage);
     try {
@@ -42,13 +45,15 @@ function Upload() {
         body: formData,
       });
       const data = await response.json();
+      setLoading(false);
       if (response.ok) {
         // Redirect to results page and pass prediction result
-        navigate("/results", { state: { prediction: data } });
+        navigate("/results", { state: { prediction: data, uploadedImage: URL.createObjectURL(selectedImage) } });
       } else {
         setErrorMessage(data.error || "Prediction failed.");
       }
     } catch {
+      setLoading(false);
       setErrorMessage("Error uploading image.");
     }
   };
@@ -88,6 +93,7 @@ function Upload() {
         accept="image/*"
         onChange={handleFileChange}
         style={{ marginBottom: "1rem" }}
+        disabled={loading}
       />
       {selectedImage && (
         <div style={{ marginTop: "1rem" }}>
@@ -100,16 +106,40 @@ function Upload() {
         </div>
       )}
       <div style={{ marginTop: "1.5rem" }}>
-        <button onClick={handleUpload} style={{ marginRight: "1rem" }}>
-          Upload
+        <button onClick={handleUpload} style={{ marginRight: "1rem" }} disabled={loading}>
+          {loading ? "Analyzing..." : "Upload"}
         </button>
-        <button onClick={handleCancel}>Cancel</button>
+        <button onClick={handleCancel} disabled={loading}>Cancel</button>
       </div>
+      {loading && (
+        <div style={{ marginTop: "1rem" }}>
+          <div style={{
+            border: "4px solid #eee",
+            borderTop: "4px solid #388e3c",
+            borderRadius: "50%",
+            width: "40px",
+            height: "40px",
+            animation: "spin 1s linear infinite",
+            margin: "0 auto"
+          }} />
+          <p style={{ color: "#388e3c", fontWeight: "bold" }}>Analyzing Image...</p>
+        </div>
+      )}
       {errorMessage && (
         <div style={{ color: "red", marginTop: "1rem", fontWeight: "bold" }}>
           {errorMessage}
         </div>
       )}
+
+      {/* Spinner animation keyframes */}
+      <style>
+        {`
+        @keyframes spin {
+          0% { transform: rotate(0deg);}
+          100% { transform: rotate(360deg);}
+        }
+        `}
+      </style>
     </div>
   );
 }
