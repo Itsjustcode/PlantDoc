@@ -1,27 +1,29 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 function Footer() {
   return (
     <footer style={{
-      background: "#f3f3f3",
-      padding: "2rem 1rem",
-      marginTop: "3rem",
+      background: "#f7f7f7",
+      padding: "1.5rem 0 0.5rem 0",
       fontSize: "1rem",
-      color: "#333"
+      color: "#222",
+      textAlign: "center"
     }}>
       <div style={{
         display: "flex",
-        flexWrap: "wrap",
         justifyContent: "center",
-        gap: "2rem",
-        alignItems: "center"
+        gap: "2.5rem",
+        flexWrap: "wrap"
       }}>
-        <a href="/privacy" style={{ textDecoration: "none", color: "#333" }}>Privacy Policy</a>
-        <a href="/terms" style={{ textDecoration: "none", color: "#333" }}>Terms of Service</a>
-        <span>Follow us on social media!</span>
+        <Link to="/privacy" style={{ color: "#222", textDecoration: "none" }}>Privacy Policy</Link>
+        <Link to="/terms" style={{ color: "#222", textDecoration: "none" }}>Terms of Service</Link>
+        <Link to="/social" style={{ color: "#222", textDecoration: "none" }}>
+          Follow us on social media!
+        </Link>
         <span>Contact: info@plantdoctor.ai</span>
       </div>
-      <div style={{ textAlign: "center", marginTop: "1rem", color: "#888", fontSize: "0.9rem" }}>
+      <div style={{ marginTop: "1rem", fontSize: "0.95rem", color: "#888" }}>
         © 2025 Plant Doctor AI. All rights reserved.
       </div>
     </footer>
