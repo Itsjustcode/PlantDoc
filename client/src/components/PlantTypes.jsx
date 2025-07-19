@@ -1,29 +1,33 @@
 // src/components/PlantTypes.jsx
 
 import React from "react";
+import snakePlantImg from "../assets/snakeplant.jpg";
+import peaceLilyImg from "../assets/PeaceLily.jpg";
+import cactusImg from "../assets/Cactus.jpg";
+import aloeVeraImg from "../assets/AloeVera.jpg";
 
-// List of popular plant types with icons, names, and notes
+// List of popular plant types with images, names, and notes
 const plantTypes = [
   {
-    emoji: "🌱",
+    img: snakePlantImg,
     name: "Snake Plant",
     subtitle: "Low maintenance",
     note: "Great for beginners",
   },
   {
-    emoji: "🌸",
+    img: peaceLilyImg,
     name: "Peace Lily",
     subtitle: "Air purifier",
     note: "Flowering plant",
   },
   {
-    emoji: "🌵",
+    img: cactusImg,
     name: "Cactus",
     subtitle: "Desert plant",
     note: "Requires minimal water",
   },
   {
-    emoji: "🌼",
+    img: aloeVeraImg,
     name: "Aloe Vera",
     subtitle: "Healing plant",
     note: "Useful gel",
@@ -51,7 +55,17 @@ function PlantTypes() {
             boxShadow: "0 2px 6px rgba(0,0,0,0.06)",
           }}
         >
-          <span style={{ fontSize: "2.5rem" }}>{plant.emoji}</span>
+          <img
+            src={plant.img}
+            alt={plant.name}
+            style={{
+              width: "68px",
+              height: "68px",
+              objectFit: "cover",
+              borderRadius: "1rem",
+              marginBottom: "0.8rem",
+            }}
+          />
           <h3 style={{ margin: "0.7rem 0 0.3rem 0" }}>{plant.name}</h3>
           <div style={{ fontSize: "1rem", color: "#357a38", marginBottom: "0.2rem" }}>
             {plant.subtitle}
