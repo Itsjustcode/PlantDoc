@@ -19,7 +19,7 @@ function Home() {
   return (
     <div style={{ fontFamily: "Arial, sans-serif" }}>
       {/* Hero Section */}
-      <section style={{ background: "#388e3c", color: "#fff", padding: "3rem 1rem", textAlign: "center" }}>
+      <section style={{ background: "#00BB7D", color: "#fff", padding: "3rem 1rem", textAlign: "center" }}>
         <h1 style={{ fontSize: "2.5rem", marginBottom: "0.5rem" }}>
           Diagnose Your Plant's Health
         </h1>
