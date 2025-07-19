@@ -18,6 +18,9 @@ model = tf.keras.models.load_model(MODEL_PATH)
 # Main 3-class labels
 class_labels = ["Healthy", "Diseased", "Unknown"]
 
+# Confidence threshold for "Unknown"
+CONFIDENCE_THRESHOLD = 0.80  # change this (0.7 = 70%)
+
 # function to preprocess uploaded image
 def preprocess_image(image_path):
     img = Image.open(image_path).convert("RGB")
@@ -54,6 +57,13 @@ def predict():
     predictions = model.predict(img_array)[0]  # First batch element
     predicted_index = int(np.argmax(predictions))
     predicted_label = class_labels[predicted_index]
+    max_confidence = float(np.max(predictions))  # Get the highest confidence value
+
+    # If model isn't confident, force label to Unknown
+    if max_confidence < CONFIDENCE_THRESHOLD:
+        predicted_label = "Unknown"
+
+    # Format confidence values for response
     confidence_scores = {class_labels[i]: float(predictions[i]) for i in range(len(class_labels))}
 
     # delete the uploaded image after processing
@@ -72,10 +82,3 @@ def predict():
 # Run the app
 if __name__ == "__main__":
     app.run(debug=True)
-
-
-
-#    """
-#    A test route
-#    must visit http://localhost:3000 in browser.
-#    """
